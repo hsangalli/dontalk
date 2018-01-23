@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Don't Whats</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.3.0/vue.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/vue-resource/1.3.1/vue-resource.min.js"></script>
+  <style type="text/css">
+    * { margin: 0; padding: 0; }
+    #app {
+      height: 100vh;
+      width: 100vw;
+    }
+    .messages {
+      height: 95%;
+      margin-bottom: 10px;
+      overflow-y: auto;
+    }
+    button {
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <div id="messages" class="messages">
+      <p v-for="message in messages">
+        <b>{{ message.author }}:</b> {{ message.content }}
+      </p>
+    </div>
+    <div>
+      <input type="text" v-model="newMessage.author" @keyup.enter="postMessage()">:
+      <input type="text" autofocus placeholder="Write your message here" v-model="newMessage.content" @keyup.enter="postMessage()">
+      <button type="button" @click="postMessage()">Send</button>
+    </div>
+  </div>
+  <script>
+  new Vue({
+    el: '#app',
+    data: {
+      chat: null,
+      messages: null,
+      newMessage: {
+        chat: null,
+        author: 'Guest',
+        content: ''
+      }
+    },
+    methods: {
+      postMessage: function () {
+        if (this.newMessage.content != '') {
+          this.$http.post('/api/messages', { message: this.newMessage })
+          .then(function () {
+            this.messages.push(Object.assign({}, this.newMessage));
+            this.newMessage.content = '';
+            this.scrollThisShit();
+          });
+        }
+      },
+      getMessages: function () {
+        setInterval(() => {
+          this.$http.get(`/api/messages/${this.chat}`)
+            .then(function (response) {
+              this.messages = response.body;
+              this.scrollThisShit();
+            });
+        }, 3000)
+      },
+      scrollThisShit: function () {
+        const elem = document.getElementById('messages');
+        elem.scrollTop = elem.scrollHeight;
+      }
+    },
+    mounted: function () {
+      this.chat = window.location.pathname.replace('/', '');
+      this.newMessage.chat = this.chat;
+      this.getMessages();
+    }
+  });
+  </script>
+</body>
+</html>
