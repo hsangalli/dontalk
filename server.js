@@ -14,7 +14,6 @@ mongoose.connect(mongoUri)
 app.use(cors())
 app.use(bodyParser.json())
 app.use('/api/messages', MessageController)
-app.use(express.static("public"));
 
 app.get('/:chat', (req, res) => {
   Chat.findOne({ title: req.params['chat'] }, (err, chat) => {
@@ -24,9 +23,8 @@ app.get('/:chat', (req, res) => {
       Chat.create({ title: req.params['chat'] })
     }
   })
-
-
-res.sendFile(__dirname + '/public/chat.html')
+  
+  res.sendFile(__dirname + '/views/chat.html')
 })
 
 app.listen(port, () => {
